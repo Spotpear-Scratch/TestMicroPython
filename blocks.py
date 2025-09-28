@@ -17,11 +17,11 @@ def on_timer_trigger_timer1(timer):
 
 
 # FIXME: spotpear.timer1, ...timer2, ... 
-#        timer = Timer(-1)  # -1 means we're using a virtual timer
+#        timer = machine.Timer(-1)  # -1 means we're using a virtual timer
 def create_timer( timer, _period = 5000 ):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
-        spotpear.timer1.init(mode=Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
+        spotpear.timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
 
 
 def init_display():
