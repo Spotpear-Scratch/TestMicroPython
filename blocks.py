@@ -25,13 +25,11 @@ img.center()
 import ubinascii
 encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
 raw_image = ubinascii.a2b_base64(encoded_data)
-encoded_data = None  # Free memory
 
-image_data_mv = memoryview(raw_image)
-img_dsc = lv.image_dsc_t({'data_size': len(image_data_mv), 'data': image_data_mv})
+img_dsc = lv.image_dsc_t({'data_size': len(raw_image), 'data': memoryview(raw_image)})
 img = lv.image(lv.screen_active())
 img.set_src(img_dsc)
-img.center()
+
 
 
 
@@ -73,6 +71,15 @@ def set_timer( timer, _period = 5000 ):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
         spotpear.timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
+
+
+def draw_pixel( x=0, y=0, color=lv.color_hex(0xff0000) ):
+    scr = lv.lv.screen_active()
+    pixel = lv.obj(scr)
+    pixel.set_size(10, 10)
+    pixel.set_pos(x, y)
+    pixel.set_style_bg_color(color, 0)
+    return pixel
 
 def draw_rectangle(x=10, y=10, width=20, height=20, _color=0x00ff00):
     scr = lv.screen_active()
@@ -128,13 +135,6 @@ def display_text_at_position(label_text="Hello World!", x=10, y=10, color=0xffff
     label.add_style(label_style, 0)
     return label
 
-def get_string_pixel_width(text, font):
-    width = 0
-    for char in text:
-        glyph_dsc = lv.font_get_glyph_dsc(font, ord(char), 0)
-        if glyph_dsc:
-            width += glyph_dsc.adv_w >> 4  # advance width is in 1/16 px units
-    return width
 
 def display_text_marquee_in_container(label_text="Hello World!", x=10, y=10, color=0xffffff, size=14):
     screen = lv.screen_active()
@@ -180,78 +180,6 @@ def display_text_marquee_in_container(label_text="Hello World!", x=10, y=10, col
     return container
 
 
-def display_text_grid(square_size=50):
-    screen = lv.screen_active()
-    # Enable grid layout globally if not already enabled.
-    # Note: This is often done in a configuration file (lv_conf.h)
-    # but for MicroPython, you set it on the object directly.
-    # We will use hard-coded track sizes instead.
-    # Describe the grid layout for 5 rows and 5 columns
-    # Using fixed pixel sizes for simplicity.
-    col_dsc = [square_size] * 5 + [lv.GRID_TEMPLATE_LAST]
-    row_dsc = [square_size] * 5 + [lv.GRID_TEMPLATE_LAST]
-    # Create a parent object to hold the grid
-    grid_container = lv.obj(screen)
-    lv.obj.set_size(grid_container, 5 * square_size, 5 * square_size)
-    lv.obj.center(grid_container)
-    lv.obj.set_layout(grid_container, lv.LAYOUT.GRID)
-    lv.obj.remove_flag(grid_container, lv.obj.FLAG.SCROLLABLE)
-    lv.obj.set_style_pad_all(grid_container, 2, 0) # Add padding for spacing
-    lv.obj.set_grid_dsc_array(grid_container, col_dsc, row_dsc)
-    # Add zero padding to our label
-    label_style = lv.style_t()
-    label_style.init()
-    #label_style.set_text_font(font)
-    label_style.set_pad_all(0)    
-    # Loop through the 5x5 array and create a square for each element
-    for row_idx in range(5):
-        for col_idx in range(5):
-            # Create a simple object (like a panel) for the square
-            square_obj = lv.obj(grid_container)
-            lv.obj.set_style_bg_color(square_obj, lv.color_make(row_idx * 50, 255 - col_idx * 50, 100), 0)
-            lv.obj.remove_flag(square_obj, lv.obj.FLAG.SCROLLABLE)
-            lv.obj.set_grid_cell(
-                square_obj,
-                lv.GRID_ALIGN.STRETCH, col_idx, 1, # Align and span 1 column
-                lv.GRID_ALIGN.STRETCH, row_idx, 1  # Align and span 1 row
-            )
-            # Optional: Add text to display the array value
-            # This is a simple example and might need adjustments
-            # based on your specific data type and display requirements.
-            label = lv.label(square_obj)
-            lv.label.set_text(label, "A")
-            #lv.obj.center(label)
-            #lv.obj.add_style(label, label_style, 0)
-
-
-
-
-
-
-def setLED( boolean ):
-    led = Pin(11, Pin.OUT)
-    if boolean == 0:
-        led.off()
-    else:
-        led.on()
-
-def getButton( button_number ):
-    button1 = Pin(8, Pin.IN, Pin.PULL_UP)
-    button2 = Pin(10, Pin.IN, Pin.PULL_UP)
-    if button_number == 1:
-        return button1.value()
-    elif button_number == 2:
-        return button2.value()
-    else:
-        return None
-
-def setPixel( x=0, y=0, color=lv.color_hex(0xff0000)  ):
-    scr = lv.lv.screen_active()
-    pixel = lv.obj(scr)
-    lv.obj.set_size(pixel, 10, 10)
-    lv.obj.set_pos(pixel, x, y)
-    lv.obj.set_style_bg_color(pixel, color, 0)
-
 def parse_matrix(input_str):
     """
     Converts a colon-separated string of digits into an NxN matrix of integers.
@@ -273,51 +201,6 @@ def parse_matrix(input_str):
         raise ValueError("Input does not form a square NxN matrix.")
     
     return matrix
-
-example_array = [
-    [1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1],
-]
-BACKGROUND_COLOR = 0x2C3E50  # Dark blue-gray
-SQUARE_COLOR = 0x3498DB      # Light blue
-SCREEN_WIDTH = 128
-SCREEN_HEIGHT = 128
-BORDER_SIZE = 5
-
-init_display()
-
-display_colored_grid_v1(
-    example_array,
-    BACKGROUND_COLOR,
-    SQUARE_COLOR,
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    BORDER_SIZE,
-)
-
-display_colored_grid(
-    example_array,
-    BACKGROUND_COLOR,
-    SQUARE_COLOR,
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    BORDER_SIZE,
-)
-
-display_colored_grid_manual(
-    example_array,
-    BACKGROUND_COLOR,
-    SQUARE_COLOR,
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
-    BORDER_SIZE,
-)
-
-
-import lvgl as lv
 
 
 def draw_grid(grid, border, square_color, screen_width, screen_height):
@@ -352,6 +235,52 @@ def draw_grid(grid, border, square_color, screen_width, screen_height):
                 square.set_style_border_width(1, lv.PART.MAIN)
                 square.set_style_border_color(lv.color_hex(0x000000), lv.PART.MAIN)
 
+
+
+def set_let( boolean ):
+    led = Pin(11, Pin.OUT)
+    if boolean == 0:
+        led.off()
+    else:
+        led.on()
+
+def get_button( button_number ):
+    button1 = Pin(8, Pin.IN, Pin.PULL_UP)
+    button2 = Pin(10, Pin.IN, Pin.PULL_UP)
+    if button_number == 1:
+        return button1.value()
+    elif button_number == 2:
+        return button2.value()
+    else:
+        return None
+
+
+
+
+###########################################################
+#
+# Various test code for the above
+#
+
+example_array = [
+    [1, 0, 1, 0, 1],
+    [0, 1, 0, 1, 0],
+    [1, 0, 1, 0, 1],
+    [0, 1, 0, 1, 0],
+    [1, 0, 1, 0, 1],
+]
+BACKGROUND_COLOR = 0x2C3E50  # Dark blue-gray
+SQUARE_COLOR = 0x3498DB      # Light blue
+SCREEN_WIDTH = 128
+SCREEN_HEIGHT = 128
+BORDER_SIZE = 5
+
+init_display()
+
+
+import lvgl as lv
+
+init_display()
 draw_grid(example_array, border=5, square_color=0xFF00FF, screen_width=128, screen_height=128)
 
 
