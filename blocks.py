@@ -1,14 +1,11 @@
 # Required imports
 from spotpear import *
 import random
-
-
-
-# Mapping ST7735
+import math
 import machine
 import st77xx
 import lvgl as lv
-import machine
+
 #from machine import Pin
 
 # Define the callback function to be called after 5 seconds
@@ -17,7 +14,7 @@ def on_timer_trigger_timer1(timer):
 
 
 # FIXME: spotpear.timer1, ...timer2, ... 
-#        timer = machine.Timer(-1)  # -1 means we're using a virtual timer
+#        timer1 = machine.Timer(-1)  # -1 means we're using a virtual timer
 def create_timer( timer, _period = 5000 ):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
