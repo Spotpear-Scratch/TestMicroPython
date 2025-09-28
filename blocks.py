@@ -73,12 +73,12 @@ def set_timer( timer, _period = 5000 ):
         spotpear.timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
 
 
-def draw_pixel( x=0, y=0, color=lv.color_hex(0xff0000) ):
-    scr = lv.lv.screen_active()
+def draw_pixel( x=0, y=0, _color=0xff0000 ):
+    scr = lv.screen_active()
     pixel = lv.obj(scr)
     pixel.set_size(10, 10)
     pixel.set_pos(x, y)
-    pixel.set_style_bg_color(color, 0)
+    pixel.set_style_bg_color(lv.color_hex(_color), 0)
     return pixel
 
 def draw_rectangle(x=10, y=10, width=20, height=20, _color=0x00ff00):
