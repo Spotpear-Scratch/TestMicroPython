@@ -6,7 +6,61 @@ import machine
 import st77xx
 import lvgl as lv
 
-#from machine import Pin
+#encoded_data = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
+import ubinascii
+encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
+raw_image = ubinascii.a2b_base64(encoded_data)
+encoded_data = None  # Free memory
+# Create image descriptor
+image_dsc = lv.image_dsc_t()
+image_dsc.data = raw_image
+image_dsc.data_size = len(raw_image)
+
+# Display the image
+img = lv.image(lv.screen_active())
+img.set_src(image_dsc)
+img.center()
+
+
+import ubinascii
+encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
+raw_image = ubinascii.a2b_base64(encoded_data)
+encoded_data = None  # Free memory
+
+image_data_mv = memoryview(raw_image)
+img_dsc = lv.image_dsc_t({'data_size': len(image_data_mv), 'data': image_data_mv})
+img = lv.image(lv.screen_active())
+img.set_src(img_dsc)
+img.center()
+
+
+
+
+
+def init_display():
+    spi = machine.SPI( 1, baudrate=40_000_000, polarity=0, phase=0, sck=machine.Pin(3, machine.Pin.OUT), mosi=machine.Pin(4, machine.Pin.OUT), )
+    disp = st77xx.St7735(rot=st77xx.ST77XX_INV_LANDSCAPE,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
+    scr = lv.obj()
+    lv.screen_load(scr)
+    clear_screen(0xffffff)
+
+def rbg_to_rgb( hexcolor ):
+    """Convert 0xRBG to 0xRGB color format."""
+    r = (hexcolor & 0xFF0000) >> 16
+    b = (hexcolor & 0x00FF00) >> 8
+    g = (hexcolor & 0x0000FF)
+    return (r << 16) | (g << 8) | b
+
+
+def clear_screen( color=0x003a57 ):
+    screen = lv.screen_active()
+    screen.clean()
+    set_screen_background( color )
+
+def set_screen_background( color ) :
+    screen = lv.screen_active()
+    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(color)), lv.PART.MAIN)
+
 
 # Define the callback function to be called after 5 seconds
 def on_timer_trigger_timer1(timer):
@@ -19,24 +73,6 @@ def set_timer( timer, _period = 5000 ):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
         spotpear.timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
-
-
-def init_display():
-    spi = machine.SPI( 1, baudrate=40_000_000, polarity=0, phase=0, sck=machine.Pin(3, machine.Pin.OUT), mosi=machine.Pin(4, machine.Pin.OUT), )
-    disp = st77xx.St7735(rot=st77xx.ST77XX_INV_LANDSCAPE,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
-    scr = lv.obj()
-    lv.screen_load(scr)
-    clear_screen(0xffffff)
-
-def clear_screen( color=0x003a57 ):
-    screen = lv.screen_active()
-    screen.clean()
-    setScreenBackground( color )
-
-def set_screen_background( color ) :
-    screen = lv.screen_active()
-    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(color)), lv.PART.MAIN)
-
 
 def draw_rectangle(x=10, y=10, width=20, height=20, _color=0x00ff00):
     scr = lv.screen_active()
@@ -127,7 +163,8 @@ def display_text_marquee_in_container(label_text="Hello World!", x=10, y=10, col
     label_style.set_text_color(lv.color_hex(rbg_to_rgb(color)))
     label.add_style(label_style, 0)
     # Calculate text width and set up animation if needed
-    text_width = get_string_pixel_width(label_text, font)
+    label.refresh_ext_draw_size()  # Ensure the label's size is updated
+    text_width = label.get_width()
     container_width = container.get_width()
     # Only animate if text is wider than container
     if text_width > container_width:
@@ -281,13 +318,6 @@ display_colored_grid_manual(
 
 
 import lvgl as lv
-
-def rbg_to_rgb( hexcolor ):
-    """Convert 0xRBG to 0xRGB color format."""
-    r = (hexcolor & 0xFF0000) >> 16
-    b = (hexcolor & 0x00FF00) >> 8
-    g = (hexcolor & 0x0000FF)
-    return (r << 16) | (g << 8) | b
 
 
 def draw_grid(grid, border, square_color, screen_width, screen_height):
