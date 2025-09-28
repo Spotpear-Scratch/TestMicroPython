@@ -5,6 +5,7 @@ import math
 import machine
 import st77xx
 import lvgl as lv
+import time
 
 
 timer1 = machine.Timer(-1)
@@ -36,6 +37,7 @@ raw_image = ubinascii.a2b_base64(encoded_data)
 img_dsc = lv.image_dsc_t({'data_size': len(raw_image), 'data': memoryview(raw_image)})
 img = lv.image(lv.screen_active())
 img.set_src(img_dsc)
+
 
 
 
@@ -251,13 +253,31 @@ def draw_grid(grid, border, square_color, screen_width, screen_height):
 
 
 
-def set_pin( boolean ):
+# Sets the LED to on of off
+def set_led( boolean ):
     from machine import Pin
     led = Pin(11, Pin.OUT)
     if boolean == 0:
         led.off()
     else:
         led.on()
+
+# Sets a pin high or low
+def set_pin( pin_number, boolean ):
+    from machine import Pin
+    if pin_number == 1:
+        pin = Pin(1, Pin.OUT)
+    elif pin_number == 2:
+        pin = Pin(6, Pin.OUT)
+    elif pin_number == 3:
+        pin = Pin(21, Pin.OUT)
+    elif pin_number == 4:
+        pin = Pin(20, Pin.OUT)
+
+    if boolean == 1:
+        pin.off()
+    else:
+        pin.on( )
 
 def get_button( button_number ):
     from machine import Pin
