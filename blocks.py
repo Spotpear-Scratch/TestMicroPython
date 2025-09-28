@@ -15,7 +15,7 @@ def on_timer_trigger_timer1(timer):
 
 # FIXME: spotpear.timer1, ...timer2, ... 
 #        timer1 = machine.Timer(-1)  # -1 means we're using a virtual timer
-def create_timer( timer, _period = 5000 ):
+def set_timer( timer, _period = 5000 ):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
         spotpear.timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
@@ -25,31 +25,34 @@ def init_display():
     spi = machine.SPI( 1, baudrate=40_000_000, polarity=0, phase=0, sck=machine.Pin(3, machine.Pin.OUT), mosi=machine.Pin(4, machine.Pin.OUT), )
     disp = st77xx.St7735(rot=st77xx.ST77XX_INV_LANDSCAPE,res=(128,128), model='redtab', spi=spi, cs=2, dc=0, rst=5, rp2_dma=None, )
     scr = lv.obj()
-    scr.set_style_bg_color(lv.color_hex(0x003a57), lv.PART.MAIN)
     lv.screen_load(scr)
+    clear_screen(0xffffff)
 
-def clear_screen():
-    scr = lv.screen_active()
-    scr.clean()
-    scr.set_style_bg_color(lv.color_hex(0x003a57), lv.PART.MAIN)
+def clear_screen( color=0x003a57 ):
+    screen = lv.screen_active()
+    screen.clean()
+    setScreenBackground( color )
 
-def screen_background_color(_color=0x003a57):
-    scr = lv.screen_active()
-    scr.set_style_bg_color(lv.color_hex(_color), lv.PART.MAIN)
-    return scr
+def set_screen_background( color ) :
+    screen = lv.screen_active()
+    screen.set_style_bg_color(lv.color_hex(rbg_to_rgb(color)), lv.PART.MAIN)
+
 
 def draw_rectangle(x=10, y=10, width=20, height=20, _color=0x00ff00):
     scr = lv.screen_active()
-    color = lv.color_hex(_color)
+    color = lv.color_hex(rbg_to_rgb(_color))
     rect = lv.obj(scr)
     rect.set_size(width, height)
     rect.set_pos(x, y)
     rect.set_style_bg_color(color, 0)
+    rect.remove_flag(lv.obj.FLAG.SCROLLABLE)
+    rect.set_style_radius(0,lv.PART.MAIN)
     return rect
+
 
 def draw_line(x1=10, y1=10, x2=50, y2=50, _color=0x0000ff, width=2):
     scr = lv.screen_active()
-    color = lv.color_hex(_color)
+    color = lv.color_hex(rbg_to_rgb(_color))
     line = lv.line(scr)
     line.set_points([lv.point_precise_t({"x": x1, "y": y1}), lv.point_precise_t({"x": x2, "y": y2})],2)
     line.set_style_line_color(color, 0)
@@ -59,7 +62,7 @@ def draw_line(x1=10, y1=10, x2=50, y2=50, _color=0x0000ff, width=2):
 
 def draw_circle(x=10, y=10, radius=10, _color=0xff0000):
     scr = lv.screen_active()
-    color = lv.color_hex(_color)
+    color = lv.color_hex(rbg_to_rgb(_color))
     circle = lv.obj(scr)
     circle.set_size(radius * 2, radius * 2)
     circle.set_pos(x - radius, y - radius)
@@ -69,15 +72,75 @@ def draw_circle(x=10, y=10, radius=10, _color=0xff0000):
 
 
 
-def display_text_at_position(label_text="Hello, World!", x=10, y=10, font=lv.font_montserrat_24):
+def display_text_at_position(label_text="Hello World!", x=10, y=10, color=0xffffff, size=14):
     screen = lv.screen_active()
     label = lv.label(screen)
     lv.label.set_text(label, label_text)
-    label.set_pos(label, x, y)
+    label.set_pos(x, y)
     label_style = lv.style_t()
     label_style.init()
+    if size == 14:
+        font = lv.font_montserrat_14
+    elif size == 16:
+        font = lv.font_montserrat_16
+    elif size == 24:
+        font = lv.font_montserrat_24
+    else:
+        font = lv.font_montserrat_14  # Default to 14 if size is unrecognized
     label_style.set_text_font(font)
+    label_style.set_text_color(lv.color_hex(rbg_to_rgb(color)))
     label.add_style(label_style, 0)
+    return label
+
+def get_string_pixel_width(text, font):
+    width = 0
+    for char in text:
+        glyph_dsc = lv.font_get_glyph_dsc(font, ord(char), 0)
+        if glyph_dsc:
+            width += glyph_dsc.adv_w >> 4  # advance width is in 1/16 px units
+    return width
+
+def display_text_marquee_in_container(label_text="Hello World!", x=10, y=10, color=0xffffff, size=14):
+    screen = lv.screen_active()
+    container = lv.obj(screen)
+    container.set_size(100, 30)  # Set container size
+    container.set_pos(x, y)
+    container.set_style_clip_corner(True, 0)  # Enable clipping
+    container.set_style_bg_color(lv.color_hex(0x000000), 0)  # Optional: set background color
+    container.remove_flag(lv.obj.FLAG.SCROLLABLE)  # Disable scrolling
+    # Create the label inside the container
+    label = lv.label(container)
+    lv.label.set_text(label, label_text)
+    label.set_pos(0, 5)  # Initial position inside the container
+    # Apply style to the label
+    label_style = lv.style_t()
+    label_style.init()
+    if size == 14:
+        font = lv.font_montserrat_14
+    elif size == 16:
+        font = lv.font_montserrat_16
+    elif size == 24:
+        font = lv.font_montserrat_24
+    else:
+        font = lv.font_montserrat_14  # Default to 14 if size is unrecognized
+    label_style.set_text_font(font)
+    label_style.set_text_color(lv.color_hex(rbg_to_rgb(color)))
+    label.add_style(label_style, 0)
+    # Calculate text width and set up animation if needed
+    text_width = get_string_pixel_width(label_text, font)
+    container_width = container.get_width()
+    # Only animate if text is wider than container
+    if text_width > container_width:
+        anim = lv.anim_t()
+        anim.init()
+        anim.set_var(label)
+        anim.set_values(0, -(text_width))
+        anim.set_time(5000 + (len(label_text) * 100))  # Duration based on text length
+        anim.set_repeat_count(lv.ANIM_REPEAT_INFINITE)
+        anim.set_path_cb(lv.anim_path_linear)
+        anim.start()
+    
+    return container
 
 
 def display_text_grid(square_size=50):
@@ -124,143 +187,6 @@ def display_text_grid(square_size=50):
             #lv.obj.add_style(label, label_style, 0)
 
 
-def display_colored_grid_v1(
-    array_data,
-    bg_color_hex,
-    square_color_hex,
-    screen_width,
-    screen_height,
-    border_size,
-):
-    # Get the active screen and set the background color.
-    screen = lv.screen_active()
-    lv.obj.set_style_bg_color(screen, lv.color_hex(bg_color_hex), lv.PART.MAIN)
-    # Calculate the size of each square based on screen dimensions and borders
-    total_borders = 6 * border_size  # 5 squares + 6 borders (including outer edges)
-    square_size_w = (screen_width - total_borders) // 5
-    square_size_h = (screen_height - total_borders) // 5
-    square_size = min(square_size_w, square_size_h)
-    # Describe the grid layout for 5 rows and 5 columns
-    col_dsc = [square_size] * 5 + [lv.GRID_TEMPLATE_LAST]
-    row_dsc = [square_size] * 5 + [lv.GRID_TEMPLATE_LAST]
-    # Create a parent object (container) for the grid
-    grid_container = lv.obj(screen)
-    lv.obj.set_size(
-        grid_container,
-        5 * square_size + 4 * border_size,
-        5 * square_size + 4 * border_size,
-    )
-    lv.obj.center(grid_container)
-    lv.obj.set_layout(grid_container, lv.LAYOUT.GRID)
-    # Set padding (the gap) between the grid items.
-    lv.obj.set_style_pad_row(grid_container, border_size, 0)
-    lv.obj.set_style_pad_column(grid_container, border_size, 0)
-    lv.obj.set_style_pad_all(grid_container, border_size, 0)
-    lv.obj.set_grid_dsc_array(grid_container, col_dsc, row_dsc)
-    # Loop through the 5x5 array and create a square for each element
-    for row_idx in range(5):
-        for col_idx in range(5):
-            # Create a simple object (square) within the grid container
-            square_obj = lv.obj(grid_container)
-            # Set the color based on the array value
-            if array_data[row_idx][col_idx] == 1:
-                lv.obj.set_style_bg_color(square_obj, lv.color_hex(square_color_hex), lv.PART.MAIN)
-            # Place the square in the correct grid cell
-            lv.obj.set_grid_cell(
-                square_obj,
-                lv.GRID_ALIGN.STRETCH,
-                col_idx,
-                1,
-                lv.GRID_ALIGN.STRETCH,
-                row_idx,
-                1,
-            )
-
-
-
-def display_colored_grid(
-    array_data,
-    bg_color_hex,
-    square_color_hex,
-    screen_width,
-    screen_height,
-    border_size,
-):
-    # Get the active screen and set the background color.
-    screen = lv.screen_active()
-    lv.obj.set_style_bg_color(screen, lv.color_hex(bg_color_hex), 0)
-    # Calculate the size of each square based on screen dimensions and borders.
-    # We account for 5 squares and 6 borders (5 gaps + 2 outer edges).
-    square_side = (min(screen_width, screen_height) - (6 * border_size)) // 5
-    # Create a container to hold the squares and center it.
-    # This prevents the grid from being misaligned if a border size is specified.
-    grid_width = 5 * square_side + 4 * border_size
-    grid_height = 5 * square_side + 4 * border_size
-    container = lv.obj(screen)
-    lv.obj.set_size(container, grid_width, grid_height)
-    lv.obj.center(container)
-    # Remove any default padding from the container
-    lv.obj.set_style_pad_all(container, 0, 0)
-    lv.obj.set_style_bg_opa(container, 0, 0) # Make container transparent
-    # Loop through the 5x5 array and create and position each square.
-    for row_idx in range(5):
-        for col_idx in range(5):
-            # Calculate the x and y position for the current square.
-            x_pos = col_idx * (square_side + border_size)
-            y_pos = row_idx * (square_side + border_size)
-            # Create the square object as a child of the container.
-            square_obj = lv.obj(container)
-            lv.obj.set_size(square_obj, square_side, square_side)
-            lv.obj.set_pos(square_obj, x_pos, y_pos)
-            # Set the color based on the array value.
-            if array_data[row_idx][col_idx] == 1:
-                lv.obj.set_style_bg_color(square_obj, lv.color_hex(square_color_hex), lv.PART.MAIN)
-            else:
-                # Optionally, set a specific "off" color or make it invisible.
-                lv.obj.set_style_bg_color(square_obj, lv.color_hex(bg_color_hex), lv.PART.MAIN)
-
-
-
-
-def display_colored_grid_manual(
-    array_data,
-    bg_color_hex,
-    square_color_hex,
-    screen_width,
-    screen_height,
-    border_size,
-):
-    # Get the active screen and set the background color.
-    screen = lv.screen_active()
-    lv.obj.set_style_bg_color(screen, lv.color_hex(bg_color_hex), 0)
-    # Calculate the size of each square based on screen dimensions and borders.
-    square_side = (min(screen_width, screen_height) - (6 * border_size)) // 5
-    # Create a container to hold the squares and center it.
-    grid_width = 5 * square_side + 4 * border_size
-    grid_height = 5 * square_side + 4 * border_size
-    container = lv.obj(screen)
-    lv.obj.set_size(container, grid_width, grid_height)
-    lv.obj.center(container)
-    lv.obj.set_style_pad_all(container, lv.OPA.TRANSP, 0)
-    # The background of an object is transparent by default if no style is set,
-    # so we don't need to explicitly set the opacity.
-    # Loop through the 5x5 array and create and position each square.
-    for row_idx in range(5):
-        for col_idx in range(5):
-            # Calculate the x and y position for the current square.
-            x_pos = col_idx * (square_side + border_size)
-            y_pos = row_idx * (square_side + border_size)
-            # Create the square object as a child of the container.
-            square_obj = lv.obj(container)
-            lv.obj.set_size(square_obj, square_side, square_side)
-            lv.obj.set_pos(square_obj, x_pos, y_pos)
-            # Set the color based on the array value.
-            if array_data[row_idx][col_idx] == 1:
-                lv.obj.set_style_bg_color(square_obj, lv.color_hex(square_color_hex), 0)
-            else:
-                # Optionally, set a specific "off" color or inherit the background color.
-                lv.obj.set_style_bg_color(square_obj, lv.color_hex(bg_color_hex), 0)
-
 
 
 
@@ -289,6 +215,27 @@ def setPixel( x=0, y=0, color=lv.color_hex(0xff0000)  ):
     lv.obj.set_pos(pixel, x, y)
     lv.obj.set_style_bg_color(pixel, color, 0)
 
+def parse_matrix(input_str):
+    """
+    Converts a colon-separated string of digits into an NxN matrix of integers.
+    
+    Example:
+        '09090:90909:90009:09090:00900' → 
+        [[0,9,0,9,0],
+         [9,0,9,0,9],
+         [9,0,0,0,9],
+         [0,9,0,9,0],
+         [0,0,9,0,0]]
+    """
+    rows = input_str.split(':')
+    matrix = [[int(char) for char in row] for row in rows]
+    
+    # Optional: Validate it's a square matrix
+    n = len(matrix)
+    if not all(len(row) == n for row in matrix):
+        raise ValueError("Input does not form a square NxN matrix.")
+    
+    return matrix
 
 example_array = [
     [1, 0, 1, 0, 1],
@@ -331,6 +278,51 @@ display_colored_grid_manual(
     SCREEN_HEIGHT,
     BORDER_SIZE,
 )
+
+
+import lvgl as lv
+
+def rbg_to_rgb( hexcolor ):
+    """Convert 0xRBG to 0xRGB color format."""
+    r = (hexcolor & 0xFF0000) >> 16
+    b = (hexcolor & 0x00FF00) >> 8
+    g = (hexcolor & 0x0000FF)
+    return (r << 16) | (g << 8) | b
+
+
+def draw_grid(grid, border, square_color, screen_width, screen_height):
+    N = len(grid)
+    if N == 0 or any(len(row) != N for row in grid):
+        raise ValueError("Grid must be NxN")
+    # Calculate available space and square size
+    total_border_x = border * (N + 1)
+    total_border_y = border * (N + 1)
+    square_width = (screen_width - total_border_x) // N
+    square_height = (screen_height - total_border_y) // N
+    # Get the current screen
+    screen = lv.screen_active()
+    # Draw each square
+    for row in range(N):
+        for col in range(N):
+            if grid[row][col] == 1:
+                x = border + col * (square_width + border)
+                y = border + row * (square_height + border)
+                #
+                square = lv.obj(screen)
+                square.set_size(square_width, square_height)
+                square.set_pos(x, y)
+                square.remove_flag(lv.obj.FLAG.SCROLLABLE)
+                square.set_style_radius(0,lv.PART.MAIN)
+                #
+                square.set_style_bg_color(lv.color_hex(rbg_to_rgb(square_color)), lv.PART.MAIN)
+                # We just dont draw anything if its missing
+                #else:
+                #    square.set_style_bg_color(lv.color_hex(0xFFFFFF), lv.PART.MAIN)
+                #
+                square.set_style_border_width(1, lv.PART.MAIN)
+                square.set_style_border_color(lv.color_hex(0x000000), lv.PART.MAIN)
+
+draw_grid(example_array, border=5, square_color=0xFF00FF, screen_width=128, screen_height=128)
 
 
 
