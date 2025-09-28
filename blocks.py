@@ -6,6 +6,13 @@ import machine
 import st77xx
 import lvgl as lv
 
+
+timer1 = machine.Timer(-1)
+timer2 = machine.Timer(-1)
+timer3 = machine.Timer(-1)
+timer4 = machine.Timer(-1)
+timer5 = machine.Timer(-1)
+
 #encoded_data = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
 import ubinascii
 encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
@@ -65,12 +72,19 @@ def on_timer_trigger_timer1(timer):
     print("Timer 1 expired! Calling the next function...")
 
 
-# FIXME: spotpear.timer1, ...timer2, ... 
-#        timer1 = machine.Timer(-1)  # -1 means we're using a virtual timer
+# Expects gloabal timers 1..5
 def set_timer( timer, _period = 5000 ):
     # Create a one-shot timer that triggers after 5000 milliseconds (5 seconds)
     if timer == 1:
-        spotpear.timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
+        timer1.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer1)
+    elif timer == 2:
+        timer2.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer2)
+    elif timer == 3:
+        timer3.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer3)
+    elif timer == 4:
+        timer4.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer4)
+    elif timer == 5:
+        timer5.init(mode=machine.Timer.ONE_SHOT, period=_period, callback=on_timer_trigger_timer5)
 
 
 def draw_pixel( x=0, y=0, _color=0xff0000 ):
@@ -237,7 +251,8 @@ def draw_grid(grid, border, square_color, screen_width, screen_height):
 
 
 
-def set_let( boolean ):
+def set_pin( boolean ):
+    from machine import Pin
     led = Pin(11, Pin.OUT)
     if boolean == 0:
         led.off()
@@ -245,6 +260,7 @@ def set_let( boolean ):
         led.on()
 
 def get_button( button_number ):
+    from machine import Pin
     button1 = Pin(8, Pin.IN, Pin.PULL_UP)
     button2 = Pin(10, Pin.IN, Pin.PULL_UP)
     if button_number == 1:
