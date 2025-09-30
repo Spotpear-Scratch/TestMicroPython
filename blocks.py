@@ -8,39 +8,42 @@ import lvgl as lv
 import time
 
 
+
+from machine import Pin
+
+def pin_handler1(pin):
+    print("Interrupt triggered!")
+    _spbutton1_val = 1
+
+def pin_handler2(pin):
+    print("Interrupt triggered!")
+    _spbutton2_val = 1
+
+_spbutton1_val = 0
+_spbutton1 = Pin(8, Pin.IN)
+_spbutton1.irq(trigger=Pin.IRQ_RISING, handler=pin_handler1)
+
+_spbutton2_val = 0
+_spbutton2 = Pin(10, Pin.IN)
+_spbutton2.irq(trigger=Pin.IRQ_RISING, handler=pin_handler2)
+
+# No longer direct read
+def get_button_v2( button_number ): 
+    let tval = None
+    if button_number == 1:
+        tval = _spbutton1_val
+        _spbutton1_val = 0
+    elif button_number == 2:
+        tval = _spbutton2_val
+        _spbutton2_val = 0
+    return tval
+
+
 timer1 = machine.Timer(-1)
 timer2 = machine.Timer(-1)
 timer3 = machine.Timer(-1)
 timer4 = machine.Timer(-1)
 timer5 = machine.Timer(-1)
-
-#encoded_data = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
-import ubinascii
-encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
-raw_image = ubinascii.a2b_base64(encoded_data)
-encoded_data = None  # Free memory
-# Create image descriptor
-image_dsc = lv.image_dsc_t()
-image_dsc.data = raw_image
-image_dsc.data_size = len(raw_image)
-
-# Display the image
-img = lv.image(lv.screen_active())
-img.set_src(image_dsc)
-img.center()
-
-
-import ubinascii
-encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
-raw_image = ubinascii.a2b_base64(encoded_data)
-
-img_dsc = lv.image_dsc_t({'data_size': len(raw_image), 'data': memoryview(raw_image)})
-img = lv.image(lv.screen_active())
-img.set_src(img_dsc)
-
-
-
-
 
 
 
@@ -343,3 +346,117 @@ screen_active
 
 
 ['__class__', '__name__', 'CLASS_EDITABLE', 'CLASS_GROUP_DEF', 'CLASS_THEME_INHERITABLE', 'FLAG', 'POINT_TRANSFORM_FLAG', 'TREE_WALK', '__bases__', '__cast__', '__dict__', 'add_event_cb', 'add_flag', 'add_state', 'add_style', 'align', 'align_to', 'allocate_spec_attr', 'area_is_visible', 'bind_checked', 'bind_flag_if_eq', 'bind_flag_if_ge', 'bind_flag_if_gt', 'bind_flag_if_le', 'bind_flag_if_lt', 'bind_flag_if_not_eq', 'bind_state_if_eq', 'bind_state_if_ge', 'bind_state_if_gt', 'bind_state_if_le', 'bind_state_if_lt', 'bind_state_if_not_eq', 'calculate_ext_draw_size', 'calculate_style_text_align', 'center', 'check_type', 'class_create_obj', 'class_init_obj', 'clean', 'delete', 'delete_anim_completed_cb', 'delete_async', 'delete_delayed', 'destruct', 'dump_tree', 'enable_style_refresh', 'event_base', 'fade_in', 'fade_out', 'get_child', 'get_child_by_type', 'get_child_count', 'get_child_count_by_type', 'get_class', 'get_click_area', 'get_content_coords', 'get_content_height', 'get_content_width', 'get_coords', 'get_display', 'get_event_count', 'get_event_dsc', 'get_ext_draw_size', 'get_group', 'get_height', 'get_index', 'get_index_by_type', 'get_layer_type', 'get_local_style_prop', 'get_parent', 'get_screen', 'get_scroll_bottom', 'get_scroll_dir', 'get_scroll_end', 'get_scroll_left', 'get_scroll_right', 'get_scroll_snap_x', 'get_scroll_snap_y', 'get_scroll_top', 'get_scroll_x', 'get_scroll_y', 'get_scrollbar_area', 'get_scrollbar_mode', 'get_self_height', 'get_self_width', 'get_sibling', 'get_sibling_by_type', 'get_state', 'get_style_align', 'get_style_anim', 'get_style_anim_duration', 'get_style_arc_color', 'get_style_arc_color_filtered', 'get_style_arc_image_src', 'get_style_arc_opa', 'get_style_arc_rounded', 'get_style_arc_width', 'get_style_base_dir', 'get_style_bg_color', 'get_style_bg_color_filtered', 'get_style_bg_grad', 'get_style_bg_grad_color', 'get_style_bg_grad_color_filtered', 'get_style_bg_grad_dir', 'get_style_bg_grad_opa', 'get_style_bg_grad_stop', 'get_style_bg_image_opa', 'get_style_bg_image_recolor', 'get_style_bg_image_recolor_filtered', 'get_style_bg_image_recolor_opa', 'get_style_bg_image_src', 'get_style_bg_image_tiled', 'get_style_bg_main_opa', 'get_style_bg_main_stop', 'get_style_bg_opa', 'get_style_bitmap_mask_src', 'get_style_blend_mode', 'get_style_border_color', 'get_style_border_color_filtered', 'get_style_border_opa', 'get_style_border_post', 'get_style_border_side', 'get_style_border_width', 'get_style_clip_corner', 'get_style_color_filter_dsc', 'get_style_color_filter_opa', 'get_style_flex_cross_place', 'get_style_flex_flow', 'get_style_flex_grow', 'get_style_flex_main_place', 'get_style_flex_track_place', 'get_style_grid_cell_column_pos', 'get_style_grid_cell_column_span', 'get_style_grid_cell_row_pos', 'get_style_grid_cell_row_span', 'get_style_grid_cell_x_align', 'get_style_grid_cell_y_align', 'get_style_grid_column_align', 'get_style_grid_column_dsc_array', 'get_style_grid_row_align', 'get_style_grid_row_dsc_array', 'get_style_height', 'get_style_image_opa', 'get_style_image_recolor', 'get_style_image_recolor_filtered', 'get_style_image_recolor_opa', 'get_style_layout', 'get_style_length', 'get_style_line_color', 'get_style_line_color_filtered', 'get_style_line_dash_gap', 'get_style_line_dash_width', 'get_style_line_opa', 'get_style_line_rounded', 'get_style_line_width', 'get_style_margin_bottom', 'get_style_margin_left', 'get_style_margin_right', 'get_style_margin_top', 'get_style_max_height', 'get_style_max_width', 'get_style_min_height', 'get_style_min_width', 'get_style_opa', 'get_style_opa_layered', 'get_style_opa_recursive', 'get_style_outline_color', 'get_style_outline_color_filtered', 'get_style_outline_opa', 'get_style_outline_pad', 'get_style_outline_width', 'get_style_pad_bottom', 'get_style_pad_column', 'get_style_pad_left', 'get_style_pad_radial', 'get_style_pad_right', 'get_style_pad_row', 'get_style_pad_top', 'get_style_prop', 'get_style_radial_offset', 'get_style_radius', 'get_style_recolor', 'get_style_recolor_opa', 'get_style_recolor_recursive', 'get_style_rotary_sensitivity', 'get_style_shadow_color', 'get_style_shadow_color_filtered', 'get_style_shadow_offset_x', 'get_style_shadow_offset_y', 'get_style_shadow_opa', 'get_style_shadow_spread', 'get_style_shadow_width', 'get_style_space_bottom', 'get_style_space_left', 'get_style_space_right', 'get_style_space_top', 'get_style_text_align', 'get_style_text_color', 'get_style_text_color_filtered', 'get_style_text_decor', 'get_style_text_font', 'get_style_text_letter_space', 'get_style_text_line_space', 'get_style_text_opa', 'get_style_text_outline_stroke_color', 'get_style_text_outline_stroke_color_filtered', 'get_style_text_outline_stroke_opa', 'get_style_text_outline_stroke_width', 'get_style_transform_height', 'get_style_transform_pivot_x', 'get_style_transform_pivot_y', 'get_style_transform_rotation', 'get_style_transform_scale_x', 'get_style_transform_scale_x_safe', 'get_style_transform_scale_y', 'get_style_transform_scale_y_safe', 'get_style_transform_skew_x', 'get_style_transform_skew_y', 'get_style_transform_width', 'get_style_transition', 'get_style_translate_radial', 'get_style_translate_x', 'get_style_translate_y', 'get_style_width', 'get_style_x', 'get_style_y', 'get_transform', 'get_transformed_area', 'get_user_data', 'get_width', 'get_x', 'get_x2', 'get_x_aligned', 'get_y', 'get_y2', 'get_y_aligned', 'has_class', 'has_flag', 'has_flag_any', 'has_state', 'has_style_prop', 'hit_test', 'init_draw_arc_dsc', 'init_draw_image_dsc', 'init_draw_label_dsc', 'init_draw_line_dsc', 'init_draw_rect_dsc', 'invalidate', 'invalidate_area', 'is_editable', 'is_group_def', 'is_layout_positioned', 'is_scrolling', 'is_valid', 'is_visible', 'mark_layout_as_dirty', 'move_background', 'move_children_by', 'move_foreground', 'move_to', 'move_to_index', 'null_on_delete', 'readjust_scroll', 'redraw', 'refr_pos', 'refr_size', 'refresh_ext_draw_size', 'refresh_self_size', 'refresh_style', 'remove_event', 'remove_event_cb', 'remove_event_cb_with_user_data', 'remove_event_dsc', 'remove_flag', 'remove_from_subject', 'remove_local_style_prop', 'remove_state', 'remove_style', 'remove_style_all', 'replace_style', 'report_style_change', 'reset_transform', 'scroll_by', 'scroll_by_bounded', 'scroll_by_raw', 'scroll_to', 'scroll_to_view', 'scroll_to_view_recursive', 'scroll_to_x', 'scroll_to_y', 'scrollbar_invalidate', 'send_event', 'set_align', 'set_content_height', 'set_content_width', 'set_ext_click_area', 'set_flag', 'set_flex_align', 'set_flex_flow', 'set_flex_grow', 'set_grid_align', 'set_grid_cell', 'set_grid_dsc_array', 'set_height', 'set_layout', 'set_local_style_prop', 'set_parent', 'set_pos', 'set_scroll_dir', 'set_scroll_snap_x', 'set_scroll_snap_y', 'set_scrollbar_mode', 'set_size', 'set_state', 'set_style_align', 'set_style_anim', 'set_style_anim_duration', 'set_style_arc_color', 'set_style_arc_image_src', 'set_style_arc_opa', 'set_style_arc_rounded', 'set_style_arc_width', 'set_style_base_dir', 'set_style_bg_color', 'set_style_bg_grad', 'set_style_bg_grad_color', 'set_style_bg_grad_dir', 'set_style_bg_grad_opa', 'set_style_bg_grad_stop', 'set_style_bg_image_opa', 'set_style_bg_image_recolor', 'set_style_bg_image_recolor_opa', 'set_style_bg_image_src', 'set_style_bg_image_tiled', 'set_style_bg_main_opa', 'set_style_bg_main_stop', 'set_style_bg_opa', 'set_style_bitmap_mask_src', 'set_style_blend_mode', 'set_style_border_color', 'set_style_border_opa', 'set_style_border_post', 'set_style_border_side', 'set_style_border_width', 'set_style_clip_corner', 'set_style_color_filter_dsc', 'set_style_color_filter_opa', 'set_style_flex_cross_place', 'set_style_flex_flow', 'set_style_flex_grow', 'set_style_flex_main_place', 'set_style_flex_track_place', 'set_style_grid_cell_column_pos', 'set_style_grid_cell_column_span', 'set_style_grid_cell_row_pos', 'set_style_grid_cell_row_span', 'set_style_grid_cell_x_align', 'set_style_grid_cell_y_align', 'set_style_grid_column_align', 'set_style_grid_column_dsc_array', 'set_style_grid_row_align', 'set_style_grid_row_dsc_array', 'set_style_height', 'set_style_image_opa', 'set_style_image_recolor', 'set_style_image_recolor_opa', 'set_style_layout', 'set_style_length', 'set_style_line_color', 'set_style_line_dash_gap', 'set_style_line_dash_width', 'set_style_line_opa', 'set_style_line_rounded', 'set_style_line_width', 'set_style_margin_all', 'set_style_margin_bottom', 'set_style_margin_hor', 'set_style_margin_left', 'set_style_margin_right', 'set_style_margin_top', 'set_style_margin_ver', 'set_style_max_height', 'set_style_max_width', 'set_style_min_height', 'set_style_min_width', 'set_style_opa', 'set_style_opa_layered', 'set_style_outline_color', 'set_style_outline_opa', 'set_style_outline_pad', 'set_style_outline_width', 'set_style_pad_all', 'set_style_pad_bottom', 'set_style_pad_column', 'set_style_pad_gap', 'set_style_pad_hor', 'set_style_pad_left', 'set_style_pad_radial', 'set_style_pad_right', 'set_style_pad_row', 'set_style_pad_top', 'set_style_pad_ver', 'set_style_radial_offset', 'set_style_radius', 'set_style_recolor', 'set_style_recolor_opa', 'set_style_rotary_sensitivity', 'set_style_shadow_color', 'set_style_shadow_offset_x', 'set_style_shadow_offset_y', 'set_style_shadow_opa', 'set_style_shadow_spread', 'set_style_shadow_width', 'set_style_size', 'set_style_text_align', 'set_style_text_color', 'set_style_text_decor', 'set_style_text_font', 'set_style_text_letter_space', 'set_style_text_line_space', 'set_style_text_opa', 'set_style_text_outline_stroke_color', 'set_style_text_outline_stroke_opa', 'set_style_text_outline_stroke_width', 'set_style_transform_height', 'set_style_transform_pivot_x', 'set_style_transform_pivot_y', 'set_style_transform_rotation', 'set_style_transform_scale', 'set_style_transform_scale_x', 'set_style_transform_scale_y', 'set_style_transform_skew_x', 'set_style_transform_skew_y', 'set_style_transform_width', 'set_style_transition', 'set_style_translate_radial', 'set_style_translate_x', 'set_style_translate_y', 'set_style_width', 'set_style_x', 'set_style_y', 'set_transform', 'set_user_data', 'set_width', 'set_x', 'set_y', 'stop_scroll_anim', 'style_apply_color_filter', 'style_apply_recolor', 'style_create_transition', 'style_deinit', 'style_get_selector_part', 'style_get_selector_state', 'style_init', 'style_state_compare', 'swap', 'transform_point', 'transform_point_array', 'tree_walk', 'update_layer_type', 'update_layout', 'update_snap']
+
+
+
+
+
+import lvgl as lv
+import ubinascii
+encoded_data = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQAAAADrRVxmAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+kJHA8MFFdztvAAAALcSURBVEjHjdYxyuM4FAfwv/CsvUWIi21UBDRHiDulseYoA75AwK3BWtJ+TC5g8FXkxu6SKwjM4NYmjQzBb3GW2d357G/WKn+SQE960hPoXYMG7wJzRNrnTyHBllASB9WhCd8OB0gaNkDhcTspox79oXXSRGsgqKn6/TksLHdbAZL1wC6xYhuUxMkFJuxTLTr390p/hjlaWUe39C3h3Y/wfw1EjmrJ7n1ScDdv4QKeHhdGMoM/ii/fEbMXuBlE0XarcLlYQMbqQgUJo2gJ2gMg/UgDXgBW4ekF3Klm6AGv89dAC0dmQpw+rMDYvAO3Ch4XmI7xbpcDsWRLKKnrmjpm/TmxzlXVBigEAjkOtyy0wir6ALj7D9iEyDjWn9OCXFCtgM5gaZzUW3ixfFLNBmjnw5FQl6ttyYdagk5g3ckcd7vEccmGDWAzyydm9ued1wYyoCUUueCM7n2WaAsZR/9C+iEcumB0rHpcypaqSW2Ai0XnWGWAjHcAW4L1nCWzDx8Pap1qmvdwX44oWy5UNdzO8Ozr3i5AJ86xOrrPM+aeDWAB+P4R3lWjgx9uACISp2ZSOi9F5ytagTbgMcL79UFwvgw2QUesuinSoqVqbH4GM84Jw101mjhDDutUtQGK3Dmf3Y6eFqBXar+HP9uA+2D48in7nbuaoX1BZM67jHNXqxXQnZhPMstLyyG3wDPhwKnfI3wegFO1hLLsRDNOIT2eAr4aNoA9CBer4ZY+PQtZRyvwWQDxEZ7+bPFbHaFtCYhjdtFfWxFMagWeooN/jLNQ2wAm2gBWODuOw7csbEVAk/oBt39A56B6LgVhAYv53v4vELmA1XHY5xceqIaWoCHcqaq+pf3BkpzfoF/A1xeUJCzU/fq4ag+qWYG5NEJVBp6es569wKnBIC3shxCMYx/1Wd6Kmg3bQMg46tNr6dkpZksoSTiJ/TEl3QYmGDaAhoCP/T6l0oIcW8L778ZfhnrowbaPR8kAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjUtMDktMjhUMTU6MTI6MTQrMDA6MDBDx3pyAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI1LTA5LTI4VDE1OjEyOjE0KzAwOjAwMprCzgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNS0wOS0yOFQxNToxMjoyMCswMDowMB9PwOEAAAAhdEVYdGhpc3RvZ3JhbTpjb250cmFzdC1zdHJldGNoADB4MTAwJXXjKWEAAAAASUVORK5CYII="
+raw_image = ubinascii.a2b_base64(encoded_data)
+
+import struct
+import io
+import deflate
+
+
+def decompress(data, wbits=15):
+    f = io.BytesIO(data)
+    with deflate.DeflateIO(f, *_decode_wbits(wbits, True)) as g:
+        return g.read()
+
+def _decode_wbits(wbits, decompress):
+    if -15 <= wbits <= -5:
+        return (
+            deflate.RAW,
+            -wbits,
+        )
+    elif 5 <= wbits <= 15:
+        return (deflate.ZLIB, wbits)
+    elif decompress and wbits == 0:
+        return (deflate.ZLIB,)
+    elif 21 <= wbits <= 31:
+        return (deflate.GZIP, wbits - 16)
+    elif decompress and 35 <= wbits <= 47:
+        return (deflate.AUTO, wbits - 32)
+    else:
+        raise ValueError("wbits")
+
+def decompress_png_idat(idat_bytes):
+    compressed_stream = io.BytesIO(idat_bytes)
+    decompressor = deflate.DeflateIO(compressed_stream)
+    # Read in chunks to avoid buffer overflow
+    output = bytearray()
+    while True:
+        chunk = decompressor.read(512)  # Adjust chunk size as needed
+        if not chunk:
+            break
+        output.extend(chunk)
+    return bytes(output)
+
+
+def png_to_lvgl_rgb565(png_bytes):
+    # Verify PNG signature
+    if png_bytes[:8] != b'\x89PNG\r\n\x1a\n':
+        raise ValueError("Not a valid PNG file")
+    # Initialize variables
+    offset = 8
+    width = height = None
+    bit_depth = color_type = None
+    idat_data = b''
+    # Parse chunks
+    while offset < len(png_bytes):
+        length = struct.unpack(">I", png_bytes[offset:offset+4])[0]
+        chunk_type = png_bytes[offset+4:offset+8]
+        chunk_data = png_bytes[offset+8:offset+8+length]
+        offset += 8 + length + 4  # Skip CRC
+        # Process chunks
+        if chunk_type == b'IHDR':
+            width, height, bit_depth, color_type = struct.unpack(">IIBB5x", chunk_data)
+            if bit_depth != 8 or color_type != 2:
+                raise NotImplementedError("Only 8-bit RGB PNGs are supported")
+        elif chunk_type == b'IDAT':
+            idat_data += chunk_data
+        elif chunk_type == b'IEND':
+            break
+    # Decompress image data
+    decompressed = decompress_png_idat(idat_data)
+    # Decode scanlines
+    stride = width * 3
+    rgb565_data = bytearray()
+    i = 0
+    for y in range(height):
+        filter_type = decompressed[i]
+        i += 1
+        if filter_type != 0:
+            raise NotImplementedError("Only filter type 0 is supported")
+        for x in range(width):
+            r = decompressed[i]
+            g = decompressed[i+1]
+            b = decompressed[i+2]
+            i += 3
+            rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+            rgb565_data += struct.pack("<H", rgb565)
+    # Build LVGL-style descriptor
+    lv_img_dsc = {
+        "header": {
+            "always_zero": 0,
+            "w": width,
+            "h": height,
+            "cf": "LV_IMG_CF_TRUE_COLOR",
+        },
+        "data_size": len(rgb565_data),
+        "data": rgb565_data
+    }
+    return lv_img_dsc
+
+
+xxx = png_to_lvgl_rgb565( raw_image )
+
+
+img_dsc = lv.image_dsc_t({'data_size': len(raw_image), 'data': memoryview(raw_image)})
+img = lv.image(lv.screen_active())
+img.set_src(img_dsc)
+
+img.center()
